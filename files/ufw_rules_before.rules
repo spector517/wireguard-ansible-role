@@ -1,0 +1,8 @@
+# START VPN RULES 4df7f0a349330e9d68210f3a0c29649e242b206275a47201c824bf0307dfb230
+# NAT table rules
+*nat
+:POSTROUTING ACCEPT [0:0]
+# Allow traffic from VPN client to $ansible_default_ipv4.interface (change to the interface you discovered!)
+-A POSTROUTING -s $wg_subnet -o $ansible_default_ipv4.interface -j MASQUERADE
+COMMIT
+# END VPN RULES

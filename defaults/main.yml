@@ -1,0 +1,17 @@
+wireguard_url: your-vpn-server.com
+wireguard_port: 51820
+wireguard_network_interface: wg0
+wireguard_network_address: 10.9.0.1/24
+wireguard_dns:
+  - 1.1.1.1
+
+wireguard_package_version: latest
+
+wireguard_use_ufw: false
+
+wireguard_clients:
+  - client1
+
+wireguard_storage_path: ~/wg-storage
+
+wireguard_additional_storage_server:

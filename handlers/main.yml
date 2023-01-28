@@ -1,0 +1,20 @@
+- name: Apply sysctl.conf configuration
+  ansible.builtin.command:
+    cmd: sysctl -p
+  changed_when: sysctl_conf_change_info.changed
+  listen: 'wireguard : apply sysctl config'
+
+
+- name: Reload Uncomplicated Firewall
+  community.general.ufw:
+    state: reloaded
+  listen: 'wireguard : reload firewall'
+
+
+- name: Reload Wireguard server
+  ansible.builtin.systemd:
+    service: 'wg-quick@{{ wireguard_network_interface }}.service'
+    state: reloaded
+    enabled: true
+  when: not ansible_check_mode
+  listen: 'wireguard : reload service'

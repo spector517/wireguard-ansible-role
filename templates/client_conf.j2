@@ -1,0 +1,9 @@
+[Interface]
+Address = {{ wg_client.ip }}
+PrivateKey = {{ wg_client.private_key }}
+DNS = {{ wireguard_dns | join(', ') }}
+
+[Peer]
+Endpoint = {{ wireguard_url }}:{{ wireguard_port }}
+AllowedIPs = 0.0.0.0/0
+PublicKey = {{ wg_server_public_key }}

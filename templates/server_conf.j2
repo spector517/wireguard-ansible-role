@@ -1,0 +1,15 @@
+[Interface]
+Address = {{ wireguard_network_address}}
+PrivateKey = {{ wg_server_private_key }}
+ListenPort = {{ wireguard_port }}
+{% if not wireguard_use_ufw %}
+PostUp = iptables -A FORWARD -i {{ wireguard_network_interface }} -j ACCEPT; iptables -t nat -A POSTROUTING -o {{ ansible_default_ipv4.interface }} -j MASQUERADE
+PostDown = iptables -D FORWARD -i {{ wireguard_network_interface }} -j ACCEPT; iptables -t nat -D POSTROUTING -o {{ ansible_default_ipv4.interface }} -j MASQUERADE
+{% endif %}
+
+{% for wg_client in wg_clients %}
+[Peer]
+AllowedIPs = {{ wg_client.ip }}/32
+PublicKey = {{ wg_client.public_key }}
+
+{% endfor %}

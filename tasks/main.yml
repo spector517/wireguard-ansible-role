@@ -1,0 +1,44 @@
+- name: CHECK CLIENTS
+  ansible.builtin.include_tasks:
+    file: tasks/check_clients.yml
+  loop: '{{ wireguard_clients }}'
+  loop_control:
+    loop_var: wg_client_name
+
+
+- name: PREPARE SERVER
+  ansible.builtin.include_tasks:
+    file: tasks/prepare_server.yml
+
+
+- name: PREPARE EXISTING CLIENTS
+  ansible.builtin.include_tasks:
+    file: tasks/prepare_existing_clients.yml
+  loop: '{{ wg_existing_clients_names }}'
+  loop_control:
+    loop_var: wg_client_name
+
+
+- name: PREPARE NEW CLIENTS
+  ansible.builtin.include_tasks:
+    file: tasks/prepare_new_clients.yml
+  vars:
+    existing_clients_count: '{{ wg_existing_clients_names | length }}'
+    wg_subnet: "{{ wireguard_network_address.split('.')[0:-1] | join('.') + '.' }}"
+  loop: '{{ wg_new_clients_names }}'
+  loop_control:
+    loop_var: wg_client_name
+    index_var: index
+
+
+- name: DEPLOY WIREGUARD
+  ansible.builtin.include_tasks:
+    file: tasks/deploy.yml
+
+
+- name: ADDITIONAL STORAGE
+  ansible.builtin.include_tasks:
+    file: tasks/add_storage.yml
+  when:
+    - wireguard_additional_storage_server is defined
+    - wireguard_additional_storage_server

@@ -1,0 +1,111 @@
+- name: Create all clients list
+  ansible.builtin.set_fact:
+    wg_clients: '{{ wg_existing_clients | default([]) + wg_new_clients | default([]) }}'
+  delegate_to: localhost
+  run_once: true
+
+
+- name: Fill server config template
+  ansible.builtin.template:
+    src: templates/server_conf.j2
+    dest: '{{ wireguard_storage_path }}/{{ wireguard_network_interface }}.conf'
+    mode: '700'
+  delegate_to: localhost
+  run_once: true
+
+
+- name: Copy server config to remotes
+  ansible.builtin.copy:
+    src: '{{ wireguard_storage_path }}/{{ wireguard_network_interface }}.conf'
+    dest: '/etc/wireguard/{{ wireguard_network_interface }}.conf'
+    mode: '700'
+  when: not ansible_check_mode
+  notify: 'wireguard : reload service'
+
+
+- name: Create clients configs on localhost
+  ansible.builtin.template:
+    src: templates/client_conf.j2
+    dest: '{{ wireguard_storage_path }}/clients/{{ wg_client.name }}.conf'
+    mode: '700'
+  loop: '{{ wg_clients }}'
+  loop_control:
+    loop_var: wg_client
+    label: '{{ wg_client.name }}'
+  delegate_to: localhost
+  run_once: true
+
+
+- name: Edit sysctl.conf (ip forwarding)
+  ansible.builtin.lineinfile:
+    path: /etc/sysctl.conf
+    line: net.ipv4.ip_forward = 1
+  register: sysctl_conf_change_info
+  notify: 'wireguard : apply sysctl config'
+
+
+- name: Edit default forward policy
+  ansible.builtin.lineinfile:
+    path: /etc/default/ufw
+    regexp: '^DEFAULT_FORWARD_POLICY=.+'
+    line: 'DEFAULT_FORWARD_POLICY="ACCEPT"'
+  when: wireguard_use_ufw
+  notify: 'wireguard : reload firewall'
+
+
+- name: Backup UFW before.rules
+  ansible.builtin.copy:
+    src: /etc/ufw/before.rules
+    dest: /etc/ufw/before.rules.bak
+    mode: '644'
+    remote_src: true
+  when: wireguard_use_ufw
+
+
+- name: Check UFW before.rules
+  ansible.builtin.command:
+    cmd: cat /etc/ufw/before.rules
+  register: ufw_rules_before_info
+  check_mode: false
+  changed_when: false
+  when: wireguard_use_ufw
+
+
+- name: Get wireguard_subnet address
+  ansible.builtin.set_fact:
+    wg_subnet: "{{ wireguard_network_address.split('.')[0:2] | join('.') + '.0.0/8' }}"
+  when: wireguard_use_ufw
+
+
+- name: Inject WireGuard rule to ufw
+  ansible.builtin.lineinfile:
+    path: /etc/ufw/before.rules
+    line: "{{ lookup('file', 'ufw_rules_before.rules')
+      | replace('$ansible_default_ipv4.interface', ansible_default_ipv4.interface)
+      | replace('$wg_subnet', wg_subnet) }}"
+    insertbefore: BOF
+    state: present
+  when:
+    - wireguard_use_ufw
+    - ('4df7f0a349330e9d68210f3a0c29649e242b206275a47201c824bf0307dfb230' not in ufw_rules_before_info.stdout)
+  notify: 'wireguard : reload firewall'
+
+
+- name: Add SSH rule of Uncomplicated Firewall
+  community.general.ufw:
+    rule: allow
+    port: '{{ ansible_port | default(22) }}'
+    protocol: tcp
+    state: enabled
+  when: wireguard_use_ufw
+  notify: 'wireguard : reload firewall'
+
+
+- name: Add Wireguard rule of Uncomplicated Firewall
+  community.general.ufw:
+    rule: allow
+    port: '{{ wireguard_port }}'
+    protocol: udp
+    state: enabled
+  when: wireguard_use_ufw
+  notify: 'wireguard : reload firewall'

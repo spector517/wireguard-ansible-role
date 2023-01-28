@@ -1,0 +1,33 @@
+- name: 'Generate private key : {{ wg_client_name }}'
+  ansible.builtin.command:
+    cmd: wg genkey
+  register: wg_client_private_key
+  run_once: true
+  changed_when: false
+
+
+- name: 'Generate public key : {{ wg_client_name }}'
+  ansible.builtin.command:
+    cmd: wg pubkey
+    stdin: '{{ wg_client_private_key.stdout | trim }}'
+  register: wg_client_public_key
+  run_once: true
+  changed_when: false
+
+
+- name: 'Calculate client number : {{ wg_client_name }}'
+  ansible.builtin.set_fact:
+    wg_client_number: '{{ existing_clients_count | int + index + 2 }}'
+  delegate_to: localhost
+  run_once: true
+
+
+- name: 'Add data of new client to list : {{ wg_client_name }}'
+  ansible.builtin.set_fact:
+    wg_new_clients: "{{ wg_new_clients | default([]) +
+      [{'name': wg_client_name,
+        'private_key': wg_client_private_key.stdout | trim,
+        'public_key': wg_client_public_key.stdout | trim,
+        'ip': wg_subnet + wg_client_number}] }}"
+  delegate_to: localhost
+  run_once: true

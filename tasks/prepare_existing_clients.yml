@@ -1,0 +1,26 @@
+- name: 'Load client config : {{ wg_client_name }}'
+  wg_conf:
+    conf_path: '{{ wireguard_storage_path }}/clients/{{ wg_client_name }}.conf'
+  register: wg_client_load_info
+  delegate_to: localhost
+  run_once: true
+
+
+- name: 'Generate public key for existing client : {{ wg_client_name }}'
+  ansible.builtin.command:
+    cmd: wg pubkey
+    stdin: '{{ wg_client_load_info.wg_config.interface.PrivateKey }}'
+  register: wg_client_public_key
+  run_once: true
+  changed_when: false
+
+
+- name: 'Add data of existing client to list : {{ wg_client_name }}'
+  ansible.builtin.set_fact:
+    wg_existing_clients: "{{ wg_existing_clients | default([]) +
+      [{'name': wg_client_name,
+        'private_key': wg_client_load_info.wg_config.interface.PrivateKey,
+        'public_key': wg_client_public_key.stdout | trim,
+        'ip': wg_client_load_info.wg_config.interface.Address}] }}"
+  delegate_to: localhost
+  run_once: true

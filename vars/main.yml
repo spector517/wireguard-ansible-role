@@ -1,0 +1,6 @@
+wireguard_url: your-vpn-server.com
+wireguard_use_ufw: false
+wireguard_clients:
+  - client1
+  - client2
+wireguard_storage_path: ~/wg_storage

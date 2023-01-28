@@ -1,0 +1,64 @@
+- name: Install WireGuard package
+  ansible.builtin.apt:
+    name: wireguard
+    state: '{{ wireguard_package_version }}'
+    update_cache: true
+  notify: 'wireguard : reload service'
+
+
+- name: Check server config
+  ansible.builtin.stat:
+    path: '{{ wireguard_storage_path }}/{{ wireguard_network_interface }}.conf'
+  register: server_conf_info
+  delegate_to: localhost
+  run_once: true
+
+
+- name: Generate server private key
+  ansible.builtin.command:
+    cmd: wg genkey
+  register: wg_genkey_result
+  run_once: true
+  when: not server_conf_info.stat.exists
+  changed_when: false
+
+
+- name: Get server private key
+  ansible.builtin.set_fact:
+    wg_server_private_key: '{{ wg_genkey_result.stdout | trim }}'
+  when: not server_conf_info.stat.exists
+  delegate_to: localhost
+  run_once: true
+
+
+- name: Load server config
+  wg_conf:
+    conf_path: '{{ wireguard_storage_path }}/{{ wireguard_network_interface }}.conf'
+  register: wg_server_config_info
+  when: server_conf_info.stat.exists
+  delegate_to: localhost
+  run_once: true
+
+
+- name: Get server private from config
+  ansible.builtin.set_fact:
+    wg_server_private_key: '{{ wg_server_config_info.wg_config.interface.PrivateKey }}'
+  when: server_conf_info.stat.exists
+  delegate_to: localhost
+  run_once: true
+
+
+- name: Generate server public key
+  ansible.builtin.command:
+    cmd: wg pubkey
+    stdin: '{{ wg_server_private_key }}'
+  register: wg_pubkey_result
+  run_once: true
+  changed_when: false
+
+
+- name: Get server public key
+  ansible.builtin.set_fact:
+    wg_server_public_key: '{{ wg_pubkey_result.stdout | trim }}'
+  delegate_to: localhost
+  run_once: true
