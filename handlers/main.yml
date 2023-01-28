@@ -11,10 +11,10 @@
   listen: 'wireguard : reload firewall'
 
 
-- name: Reload Wireguard server
+- name: Apply Wireguard server changes
   ansible.builtin.systemd:
     service: 'wg-quick@{{ wireguard_network_interface }}.service'
-    state: reloaded
+    state: '{{ wireguard_apply_changes_method }}ed'
     enabled: true
   when: not ansible_check_mode
   listen: 'wireguard : reload service'
