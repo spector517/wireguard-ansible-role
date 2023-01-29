@@ -1,0 +1,19 @@
+galaxy_info:
+  role_name: wireguard
+  author: Alexander (spector517) Borunov
+  description: Deploy WireGard VPN server and generate clients configs
+  license: MIT
+
+  min_ansible_version: '2.8'
+
+  platforms:
+    - name: Ubuntu
+      versions:
+        - focal
+        - jammy
+
+  galaxy_tags:
+    - vpn
+    - wireguard
+
+dependencies: []
