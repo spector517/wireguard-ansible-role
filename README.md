@@ -6,6 +6,7 @@ Deploy WireGuard VPN server and generate clients configs
 
 Remotes:
 - Based on Debian OS (Ubuntu 20.04+ is recommended)
+- Root access
 - Internet connection
 
 Inventory file:
