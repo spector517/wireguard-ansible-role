@@ -1,6 +1,6 @@
 galaxy_info:
   role_name: wireguard
-  author: Alexander (spector517) Borunov
+  author: spector517 # Alexander Borunov
   description: Deploy WireGard VPN server and generate clients configs
   license: MIT
 
