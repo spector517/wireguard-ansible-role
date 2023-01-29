@@ -1,3 +1,12 @@
+- name: Reset server and clients configuration
+  ansible.builtin.file:
+    path: '{{ wireguard_storage_path }}'
+    state: absent
+  when: wireguard_reset
+  delegate_to: localhost
+  run_once: true
+
+
 - name: Ensure clients directory is presents on localhost
   ansible.builtin.file:
     path: '{{ wireguard_storage_path }}/clients'

@@ -27,3 +27,5 @@ wireguard_storage_path: ~/wg-storage
 
 # Additional server for directory containing server and clients configs
 wireguard_additional_storage_server:
+
+wireguard_reset: false
