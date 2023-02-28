@@ -10,7 +10,7 @@
   ansible.builtin.stat:
     path: '{{ wireguard_storage_path }}/{{ wireguard_network_interface }}.conf'
   register: server_conf_info
-  delegate_to: localhost
+  delegate_to: '{{ wireguard_storage_server }}'
   run_once: true
 
 
@@ -27,7 +27,7 @@
   ansible.builtin.set_fact:
     wg_server_private_key: '{{ wg_genkey_result.stdout | trim }}'
   when: not server_conf_info.stat.exists
-  delegate_to: localhost
+  delegate_to: '{{ wireguard_storage_server }}'
   run_once: true
 
 
@@ -36,7 +36,7 @@
     conf_path: '{{ wireguard_storage_path }}/{{ wireguard_network_interface }}.conf'
   register: wg_server_config_info
   when: server_conf_info.stat.exists
-  delegate_to: localhost
+  delegate_to: '{{ wireguard_storage_server }}'
   run_once: true
 
 
@@ -44,7 +44,7 @@
   ansible.builtin.set_fact:
     wg_server_private_key: '{{ wg_server_config_info.wg_config.interface.PrivateKey }}'
   when: server_conf_info.stat.exists
-  delegate_to: localhost
+  delegate_to: '{{ wireguard_storage_server }}'
   run_once: true
 
 
@@ -60,5 +60,5 @@
 - name: Get server public key
   ansible.builtin.set_fact:
     wg_server_public_key: '{{ wg_pubkey_result.stdout | trim }}'
-  delegate_to: localhost
+  delegate_to: '{{ wireguard_storage_server }}'
   run_once: true

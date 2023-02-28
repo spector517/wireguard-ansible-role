@@ -1,0 +1,27 @@
+- name: Delete previous clients path on localhost
+  ansible.builtin.file:
+    path: '{{ wireguard_storage_path }}/clients'
+    state: absent
+  delegate_to: localhost
+  run_once: true
+
+
+- name: Find clients configs on storage server
+  ansible.builtin.find:
+    path: '{{ wireguard_storage_path }}/clients'
+  register: wg_clients_configs
+  delegate_to: '{{ wireguard_storage_server }}'
+  run_once: true
+
+
+- name: Fetch clients configs to localhost
+  ansible.builtin.fetch:
+    src: "{{ wireguard_storage_path }}/clients/{{ wg_clients_config.path.split('/')[-1] }}"
+    dest: "{{ wireguard_storage_path }}/clients/{{ wg_clients_config.path.split('/')[-1] }}"
+    flat: true
+  loop: '{{ wg_clients_configs.files }}'
+  loop_control:
+    loop_var: wg_clients_config
+    label: "{{ wg_clients_config.path.split('/')[-1] }}"
+  delegate_to: '{{ wireguard_storage_server }}'
+  run_once: true

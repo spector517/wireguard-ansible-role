@@ -3,17 +3,17 @@
     path: '{{ wireguard_storage_path }}'
     state: absent
   when: wireguard_reset
-  delegate_to: localhost
+  delegate_to: '{{ wireguard_storage_server }}'
   run_once: true
 
 
-- name: Ensure clients directory is presents on localhost
+- name: Ensure clients directory is presents on storage server
   ansible.builtin.file:
     path: '{{ wireguard_storage_path }}/clients'
     state: directory
     recurse: true
     mode: '700'
-  delegate_to: localhost
+  delegate_to: '{{ wireguard_storage_server }}'
   run_once: true
 
 
@@ -24,13 +24,15 @@
   when:
     - wg_new_clients_names is not defined or not wg_new_clients_names
     - wg_existing_clients_names is not defined or not wg_existing_clients_names
+  delegate_to: '{{ wireguard_storage_server }}'
+  run_once: true
 
 
 - name: 'Check if config already exists : {{ wg_client_name }}'
   ansible.builtin.stat:
     path: '{{ wireguard_storage_path }}/clients/{{ wg_client_name }}.conf'
   register: wg_client_info
-  delegate_to: localhost
+  delegate_to: '{{ wireguard_storage_server }}'
   run_once: true
 
 
@@ -38,7 +40,7 @@
   ansible.builtin.set_fact:
     wg_new_clients_names: "{{ wg_new_clients_names + [wg_client_name] }}"
   when: not wg_client_info.stat.exists
-  delegate_to: localhost
+  delegate_to: '{{ wireguard_storage_server }}'
   run_once: true
 
 
@@ -46,5 +48,5 @@
   ansible.builtin.set_fact:
     wg_existing_clients_names: "{{ wg_existing_clients_names + [wg_client_name] }}"
   when: wg_client_info.stat.exists
-  delegate_to: localhost
+  delegate_to: '{{ wireguard_storage_server }}'
   run_once: true

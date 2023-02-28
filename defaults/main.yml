@@ -22,10 +22,10 @@ wireguard_dns:
 # true if you want use the Uncomplicated Firewall
 wireguard_use_ufw: false
 
-# Path to directory containing server and clients configs
+# Path to directory containing server and clients configs (on storage server and localhost)
 wireguard_storage_path: ~/wg-storage
 
-# Additional server for directory containing server and clients configs
-wireguard_additional_storage_server:
+# Server for directory containing server and clients configs
+wireguard_storage_server: localhost
 
 wireguard_reset: false

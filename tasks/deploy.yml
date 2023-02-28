@@ -1,7 +1,7 @@
 - name: Create all clients list
   ansible.builtin.set_fact:
     wg_clients: '{{ wg_existing_clients | default([]) + wg_new_clients | default([]) }}'
-  delegate_to: localhost
+  delegate_to: '{{ wireguard_storage_server }}'
   run_once: true
 
 
@@ -10,7 +10,17 @@
     src: templates/server_conf.j2
     dest: '{{ wireguard_storage_path }}/{{ wireguard_network_interface }}.conf'
     mode: '700'
-  delegate_to: localhost
+  delegate_to: '{{ wireguard_storage_server }}'
+  run_once: true
+
+
+- name: Fetch server config to localhost from storage server
+  ansible.builtin.fetch:
+    src: '{{ wireguard_storage_path }}/{{ wireguard_network_interface }}.conf'
+    dest: '{{ wireguard_storage_path }}/{{ wireguard_network_interface }}.conf'
+    flat: true
+  when: wireguard_storage_server != 'localhost'
+  delegate_to: '{{ wireguard_storage_server }}'
   run_once: true
 
 
@@ -23,7 +33,7 @@
   notify: 'wireguard : reload service'
 
 
-- name: Create clients configs on localhost
+- name: Create clients configs on storage server
   ansible.builtin.template:
     src: templates/client_conf.j2
     dest: '{{ wireguard_storage_path }}/clients/{{ wg_client.name }}.conf'
@@ -32,7 +42,7 @@
   loop_control:
     loop_var: wg_client
     label: '{{ wg_client.name }}'
-  delegate_to: localhost
+  delegate_to: '{{ wireguard_storage_server }}'
   run_once: true
 
 

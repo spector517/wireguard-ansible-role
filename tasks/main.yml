@@ -36,9 +36,7 @@
     file: tasks/deploy.yml
 
 
-- name: ADDITIONAL STORAGE
+- name: FETCH STORAGE
   ansible.builtin.include_tasks:
-    file: tasks/add_storage.yml
-  when:
-    - wireguard_additional_storage_server is defined
-    - wireguard_additional_storage_server
+    file: tasks/fetch_clients.yml
+  when: wireguard_storage_server != 'localhost'
