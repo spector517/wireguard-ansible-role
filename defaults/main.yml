@@ -28,4 +28,5 @@ wireguard_storage_path: ~/wg-storage
 # Server for directory containing server and clients configs
 wireguard_storage_server: localhost
 
+# Reset server and clients configuration
 wireguard_reset: false

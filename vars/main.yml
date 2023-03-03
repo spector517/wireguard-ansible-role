@@ -1,12 +1,9 @@
-### Required variables
+# Most important vars
 
-# Your WireGuard VPN server URL
+# Your WireGuard VPN server url
 wireguard_url: your-vpn-server.com
 
 # List of clients names
 wireguard_clients:
   - client1
   - client2
-
-# true if you want use the Uncomplicated Firewall
-wireguard_use_ufw: false
