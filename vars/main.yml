@@ -1,4 +1,4 @@
-# Most important vars
+### Most important vars
 
 # Your WireGuard VPN server url
 wireguard_url: your-vpn-server.com
