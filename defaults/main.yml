@@ -18,6 +18,7 @@ wireguard_clients:
 # List of DNS-servers
 wireguard_dns:
   - 1.1.1.1
+  - 1.0.0.1
 
 # true if you want use the Uncomplicated Firewall
 wireguard_use_ufw: false
